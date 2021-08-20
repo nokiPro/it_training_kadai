@@ -1,0 +1,107 @@
+day07ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+HTTPリクエストがルータに送られ、blogsコントローラのindexアクションが動く。
+
+ルータの役割　リクエストをコントローラのアクションに割り振る
+rake routesした結果、Controller#Actionがどうなるか　
+コントローラの役割　モデルとビューの橋渡し
+コントローラの中に書いてある処理の詳細　
+モデルの役割　DBとの通信を行う
+なぜ変数に @ をつける必要があるか　Viewから変数を参照するためにはインスタンス変数にする必要がある。
+ビューの役割　リクエストに対してレスポンスを返す、
+どのビューファイルが呼び出されるか　index
+eachメソッドの動き　配列の要素分繰り返す
+<%= %> と <% %> の違い　＝があると値を表示する
+
+day08ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+ルータの役割
+httpサーバから送られてきた要求と情報をコントローラーのアクションに振り分ける
+
+rake routesした結果、Controller#Actionがどうなるか
+blogs GET    /blogs(.:format)
+
+コントローラの役割
+modelとviewの橋渡し
+
+コントローラの中に書いてある処理の詳細
+HTTPメソッドと対応する、index、show、new、edit、create、update、destroyアクションがある。
+
+モデルの役割
+DBとのやりとりをする
+
+なぜ変数に @ をつける必要があるか
+View側で値を参照できるようにするため
+
+ビューの役割
+HTMLを作成する
+
+どのビューファイルが呼び出されるか
+アクションと関連づけられたものや、renderで指定したもの
+
+eachメソッドの動き
+配列の要素を1つずつ取り出し、処理を実行する
+
+<%= %> と <% %> の違い
+HTMLに埋め込むか埋め込まないか
+
+day09ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+課題1
+//インスタンスメソッドとクラスメソッドの違いが謎
+save
+find
+where
+create
+update
+destroy
+
+課題2
+SELECT `blogs`.* FROM `blogs` ORDER BY `blogs`.`id` DESC LIMIT 1
+
+day10ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+<a data-confirm="Are you sure?" rel="nofollow" data-method="delete" href="/blogs/1">Destroy</a>
+
+削除ボタンをクリックすると、URLは/blogs/1で、HTTPメソッドのDELETEメソッドがルーターに送信され、ルーターがblogコントローラのdestroyアクションに処理をつなぐ。beforActionで、対象のIdのデータをインスタンス変数に格納する。その際idはparamsに格納されており、params[:id]で取得できる。destroyアクションが実行されると、
+DELETE FROM `blogs` WHERE `blogs`.`id` = 1
+が実行される。実行されると、redirect_toにより、indexアクションが呼ばれ、index.html.rbが表示される。
+
+<a href="/blogs/1/edit">Edit</a>
+編集ボタンをクリックすると、URLは/blogs/1/editで、HTTPメソッドのGETメソッドがルーターに送信され、ルーターがblogコントローラのeditアクションに処理をつなぐ。beforActionで、対象のIdのデータをインスタンス変数に格納する。その際idはparamsに格納されており、params[:id]で取得できる。パラメータの全体像は{"controller"=>"blogs","action"=>"edit", "id"=>"2"}。
+<%= render 'form' %>はヘルパーメソッドで、HTMLを短く書くための物。今回の場合はformファイルの内容が入る
+form_for(@blog) do |f| から endは
+<form action="/blogs/2" accept-charset="UTF-8" method="post"><input type="hidden" name="_method" value="patch"><input type="hidden" name="authenticity_token" value="UsvDmycKniiLxzq32M7aknZ6ntC1fRaVbhKzWTF0BNXVHhZsaEcqFQ8ysEYpGQlbuK2e3dNB7ColXjnnjGk-tQ">
+
+  <div class="field">
+    <label for="blog_title">Title</label>
+    <input type="text" value="test1" name="blog[title]" id="blog_title">
+  </div>
+
+  <div class="field">
+    <label for="blog_content">Content</label>
+    <textarea name="blog[content]" id="blog_content">テスト1</textarea>
+  </div>
+
+  <div class="actions">
+    <input type="submit" name="commit" value="Update Blog" data-disable-with="Update Blog">
+  </div>
+</form>
+と変換される。送信先はアクション部分の/blogs/2で、HTTPメソッドはPOST。そして、blogコントローラのUpdateActionが呼び出される。パラメータは
+{"_method"=>"patch","authenticity_token"=>"YgIA0pIUtxh86eAFXOaQfDKsliNnB1l2W6fvyGBMsbbTeR7-UTPt2CHEi-fjMPM6V5ZtlEG4eD7FvXnza-A0Pw", "blog"=>{"title"=>"test0", "content"=>"テスト1"}, "commit"=>"Update Blog", "controller"=>"blogs", "action"=>"update", "id"=>"2"}
+blog_paramsはストロングパラメータの役割を担う物で、中身のチェクを行う。
+実行されるSQLは
+UPDATE `blogs` SET `blogs`.`title` = 'test00', `blogs`.`updated_at` = '2021-08-10 06:13:38.647732' WHERE `blogs`.`id` = 2
+redirect_to @blogはShowページに行く。
+
+課題3
+index.html.erbを表示させる際の＠blogsに配列が入っていないため
+
+day11ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+gitignore
+.gitignoreに記述されているファイルはGitの管理対象から外れる。
+.envも同様にGitの管理対象から外れるため、そこにパスワードなど大切な情報を環境変数にセットし、他のファイルでその情報を直書きせずによくする。
+環境変数とは、パソコン内で使える変数
+
+day12ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+Blog.select(:id).map{ |blog| {id: blog.id.to_s}}.each{ |array| array[:id].to_i}.count.to_s
+
+Blog.all[0].title
+Blog.order(id: :desc).last.title
+Blog.first.title
